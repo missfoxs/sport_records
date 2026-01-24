@@ -1,55 +1,9 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env*.local
-.env
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# React Native (app/)
-app/node_modules
-app/android/build
-app/android/.gradle
-app/android/app/build
-app/ios/Pods
-app/ios/build
-app/ios/*.xcworkspace
-app/.buckd
-app/.rncache
-
 # OSX
+#
 .DS_Store
 
 # Xcode
+#
 build/
 *.pbxuser
 !default.pbxuser
@@ -69,7 +23,10 @@ DerivedData
 **/.xcode.env.local
 
 # Android/IntelliJ
+#
+build/
 .idea
+.gradle
 local.properties
 *.iml
 *.hprof
@@ -78,7 +35,19 @@ local.properties
 !debug.keystore
 .kotlin/
 
+# node.js
+#
+node_modules/
+npm-debug.log
+yarn-error.log
+
 # fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
 **/fastlane/report.xml
 **/fastlane/Preview.html
 **/fastlane/screenshots
@@ -94,6 +63,9 @@ local.properties
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
 
+# testing
+/coverage
+
 # Yarn
 .yarn/*
 !.yarn/patches
@@ -101,6 +73,3 @@ local.properties
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
-# pnpm
-.pnpm-store/
