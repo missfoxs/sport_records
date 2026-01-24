@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>运动记录 - 统计</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f2f4f8;
+            color: #1a1a1a;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #ffffff;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            padding: 20px;
+            background: white;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 220px;
+            margin-bottom: 24px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #667eea;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Personal Bests */
+        .personal-bests {
+            padding: 20px;
+            background: white;
+            margin-bottom: 24px;
+        }
+
+        .best-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .best-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .best-info {
+            flex: 1;
+        }
+
+        .best-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .best-type {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .best-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #667eea;
+        }
+
+        /* Calendar Heatmap */
+        .heatmap-section {
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            border-radius: 6px;
+            background: #e9ecef;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .calendar-day.level-1 {
+            background: #c6e48b;
+            color: #1a1a1a;
+        }
+        .calendar-day.level-2 {
+            background: #7bc96f;
+            color: white;
+        }
+        .calendar-day.level-3 {
+            background: #239a3b;
+            color: white;
+        }
+        .calendar-day.level-4 {
+            background: #196127;
+            color: white;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #adb5bd;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <a href="index.html" class="back-btn" style="text-decoration: none;">← 返回</a>
+                <div class="page-title">统计</div>
+                <div style="width: 60px;"></div>
+            </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="chart-section">
+            <div class="section-title">最近7天运动趋势</div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="chart-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">28</div>
+                    <div class="stat-label">本月锻炼天数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">目标达成率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">520</div>
+                    <div class="stat-label">总时长(分)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3,200</div>
+                    <div class="stat-label">消耗卡路里</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workout Type Distribution -->
+        <div class="chart-section">
+            <div class="section-title">运动类型分布</div>
+            <div class="chart-container" style="height: 200px;">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Personal Bests -->
+        <div class="personal-bests">
+            <div class="section-title">个人最佳</div>
+            <div class="best-list">
+                <div class="best-item">
+                    <div class="best-info">
+                        <div class="best-label">最长单次时长</div>
+                        <div class="best-type">跑步</div>
+                    </div>
+                    <div class="best-value">45 分钟</div>
+                </div>
+                <div class="best-item">
+                    <div class="best-info">
+                        <div class="best-label">最远距离</div>
+                        <div class="best-type">跑步</div>
+                    </div>
+                    <div class="best-value">5.2 公里</div>
+                </div>
+                <div class="best-item">
+                    <div class="best-info">
+                        <div class="best-label">最大重量</div>
+                        <div class="best-type">深蹲</div>
+                    </div>
+                    <div class="best-value">60 kg</div>
+                </div>
+                <div class="best-item">
+                    <div class="best-info">
+                        <div class="best-label">最多次数</div>
+                        <div class="best-type">哑铃</div>
+                    </div>
+                    <div class="best-value">80 次</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Heatmap -->
+        <div class="heatmap-section">
+            <div class="calendar-header">
+                <div class="section-title">本月运动日历</div>
+            </div>
+            <div class="calendar-grid">
+                <!-- Week 1 -->
+                <div class="calendar-day level-2">1</div>
+                <div class="calendar-day level-1">2</div>
+                <div class="calendar-day level-3">3</div>
+                <div class="calendar-day">4</div>
+                <div class="calendar-day level-2">5</div>
+                <div class="calendar-day level-4">6</div>
+                <div class="calendar-day level-3">7</div>
+                <!-- Week 2 -->
+                <div class="calendar-day level-2">8</div>
+                <div class="calendar-day level-1">9</div>
+                <div class="calendar-day level-3">10</div>
+                <div class="calendar-day level-2">11</div>
+                <div class="calendar-day level-3">12</div>
+                <div class="calendar-day level-4">13</div>
+                <div class="calendar-day">14</div>
+                <!-- Week 3 -->
+                <div class="calendar-day level-1">15</div>
+                <div class="calendar-day level-2">16</div>
+                <div class="calendar-day level-3">17</div>
+                <div class="calendar-day level-1">18</div>
+                <div class="calendar-day level-3">19</div>
+                <div class="calendar-day level-2">20</div>
+                <div class="calendar-day level-4">21</div>
+                <!-- Week 4 -->
+                <div class="calendar-day level-2">22</div>
+                <div class="calendar-day level-3">23</div>
+                <div class="calendar-day">24</div>
+                <div class="calendar-day level-1">25</div>
+                <div class="calendar-day level-3">26</div>
+                <div class="calendar-day level-2">27</div>
+                <div class="calendar-day level-3">28</div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">首页</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">记录</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">统计</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-label">设置</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Workout Trend Chart
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                datasets: [{
+                    label: '运动时长(分钟)',
+                    data: [30, 45, 0, 35, 60, 0, 40],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e9ecef'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Workout Type Distribution Chart
+        const typeCtx = document.getElementById('typeChart').getContext('2d');
+        new Chart(typeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['深蹲', '肩部哑铃', '背部哑铃', '跑步'],
+                datasets: [{
+                    data: [25, 20, 20, 35],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#4facfe'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    </script>
+</body>
+</html>
