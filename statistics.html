@@ -265,22 +265,15 @@
 
         <!-- Quick Stats -->
         <div class="chart-section">
+            <div class="section-title">本月统计</div>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">28</div>
-                    <div class="stat-label">本月锻炼天数</div>
+                    <div class="stat-label">锻炼天数</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">85%</div>
-                    <div class="stat-label">目标达成率</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">520</div>
-                    <div class="stat-label">总时长(分)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">3,200</div>
-                    <div class="stat-label">消耗卡路里</div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">最长连续</div>
                 </div>
             </div>
         </div>
@@ -295,35 +288,28 @@
 
         <!-- Personal Bests -->
         <div class="personal-bests">
-            <div class="section-title">个人最佳</div>
+            <div class="section-title">运动记录</div>
             <div class="best-list">
                 <div class="best-item">
                     <div class="best-info">
-                        <div class="best-label">最长单次时长</div>
-                        <div class="best-type">跑步</div>
-                    </div>
-                    <div class="best-value">45 分钟</div>
-                </div>
-                <div class="best-item">
-                    <div class="best-info">
-                        <div class="best-label">最远距离</div>
-                        <div class="best-type">跑步</div>
-                    </div>
-                    <div class="best-value">5.2 公里</div>
-                </div>
-                <div class="best-item">
-                    <div class="best-info">
-                        <div class="best-label">最大重量</div>
+                        <div class="best-label">最常做</div>
                         <div class="best-type">深蹲</div>
                     </div>
-                    <div class="best-value">60 kg</div>
+                    <div class="best-value">8 次</div>
                 </div>
                 <div class="best-item">
                     <div class="best-info">
-                        <div class="best-label">最多次数</div>
-                        <div class="best-type">哑铃</div>
+                        <div class="best-label">坚持最久</div>
+                        <div class="best-type">慢跑</div>
                     </div>
-                    <div class="best-value">80 次</div>
+                    <div class="best-value">2 周</div>
+                </div>
+                <div class="best-item">
+                    <div class="best-info">
+                        <div class="best-label">最近突破</div>
+                        <div class="best-type">背部哑铃</div>
+                    </div>
+                    <div class="best-value">3组×15次</div>
                 </div>
             </div>
         </div>
@@ -371,21 +357,13 @@
 
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <div class="nav-item">
+            <div class="nav-item active">
                 <div class="nav-icon">🏠</div>
                 <div class="nav-label">首页</div>
             </div>
             <div class="nav-item">
-                <div class="nav-icon">📝</div>
-                <div class="nav-label">记录</div>
-            </div>
-            <div class="nav-item active">
                 <div class="nav-icon">📊</div>
                 <div class="nav-label">统计</div>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">⚙️</div>
-                <div class="nav-label">设置</div>
             </div>
         </div>
     </div>
@@ -398,8 +376,8 @@
             data: {
                 labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
                 datasets: [{
-                    label: '运动时长(分钟)',
-                    data: [30, 45, 0, 35, 60, 0, 40],
+                    label: '完成次数',
+                    data: [3, 5, 0, 4, 6, 0, 4],
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
                     fill: true,

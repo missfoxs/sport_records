@@ -98,6 +98,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+            padding: 0 8px;
         }
 
         .stat-card {
@@ -273,6 +274,164 @@
             font-weight: 600;
             letter-spacing: 0.3px;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px;
+            animation: slideUp 0.3s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .modal-close {
+            background: #f8f9fa;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .exercise-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .exercise-type-btn {
+            padding: 16px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .exercise-type-btn.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .exercise-type-icon {
+            font-size: 32px;
+        }
+
+        .exercise-type-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .modal-submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .modal-submit-btn:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -300,14 +459,6 @@
                 <div class="stat-card">
                     <div class="stat-value">3</div>
                     <div class="stat-label">连续锻炼</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">120</div>
-                    <div class="stat-label">总时长(分)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">850</div>
-                    <div class="stat-label">消耗卡路里</div>
                 </div>
             </div>
         </div>
@@ -356,10 +507,9 @@
                 <div class="task-item">
                     <div class="task-checkbox"></div>
                     <div class="task-info">
-                        <div class="task-name">跑步</div>
+                        <div class="task-name">慢跑</div>
                         <div class="task-details">
                             <span class="task-tag">有氧</span>
-                            <span>30分钟</span>
                         </div>
                     </div>
                 </div>
@@ -375,6 +525,51 @@
             <div class="nav-item">
                 <div class="nav-icon">📊</div>
                 <div class="nav-label">统计</div>
+            </div>
+        </div>
+
+        <!-- Add Exercise Modal -->
+        <div class="modal-overlay" id="addModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">添加运动</div>
+                    <button class="modal-close" id="closeModal">×</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">选择运动类型</label>
+                    <div class="exercise-types">
+                        <div class="exercise-type-btn" data-type="strength">
+                            <div class="exercise-type-icon">💪</div>
+                            <div class="exercise-type-label">力量训练</div>
+                        </div>
+                        <div class="exercise-type-btn" data-type="cardio">
+                            <div class="exercise-type-icon">🏃</div>
+                            <div class="exercise-type-label">有氧运动</div>
+                        </div>
+                        <div class="exercise-type-btn" data-type="stretching">
+                            <div class="exercise-type-icon">🧘</div>
+                            <div class="exercise-type-label">拉伸放松</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">运动名称</label>
+                    <input type="text" class="form-input" id="exerciseName" placeholder="例如：深蹲、慢跑、俯卧撑...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">部位标签</label>
+                    <input type="text" class="form-input" id="exerciseTag" placeholder="例如：腿部、胸部、有氧...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">训练计划</label>
+                    <input type="text" class="form-input" id="exercisePlan" placeholder="例如：3组 × 15次">
+                </div>
+
+                <button class="modal-submit-btn" id="submitExercise">确认添加</button>
             </div>
         </div>
     </div>
@@ -395,6 +590,91 @@
                 checkbox.classList.toggle('checked');
                 this.classList.toggle('completed');
             });
+        });
+
+        // Modal functionality
+        const addModal = document.getElementById('addModal');
+        const addBtn = document.querySelector('.add-btn');
+        const closeModal = document.getElementById('closeModal');
+        const submitExercise = document.getElementById('submitExercise');
+
+        // Open modal
+        addBtn.addEventListener('click', function() {
+            addModal.classList.add('active');
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', function() {
+            addModal.classList.remove('active');
+        });
+
+        // Close modal when clicking outside
+        addModal.addEventListener('click', function(e) {
+            if (e.target === addModal) {
+                addModal.classList.remove('active');
+            }
+        });
+
+        // Exercise type selection
+        let selectedExerciseType = '';
+        document.querySelectorAll('.exercise-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.exercise-type-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedExerciseType = this.dataset.type;
+            });
+        });
+
+        // Submit exercise
+        submitExercise.addEventListener('click', function() {
+            const name = document.getElementById('exerciseName').value.trim();
+            const tag = document.getElementById('exerciseTag').value.trim();
+            const plan = document.getElementById('exercisePlan').value.trim();
+
+            if (!name) {
+                alert('请输入运动名称');
+                return;
+            }
+
+            if (!selectedExerciseType) {
+                alert('请选择运动类型');
+                return;
+            }
+
+            // Create new task item
+            const taskList = document.querySelector('.task-list');
+            const newTask = document.createElement('div');
+            newTask.className = 'task-item';
+            newTask.innerHTML = `
+                <div class="task-checkbox"></div>
+                <div class="task-info">
+                    <div class="task-name">${name}</div>
+                    <div class="task-details">
+                        <span class="task-tag">${tag || '其他'}</span>
+                        ${plan ? `<span>${plan}</span>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Add click handler to new task
+            newTask.addEventListener('click', function() {
+                const checkbox = this.querySelector('.task-checkbox');
+                checkbox.classList.toggle('checked');
+                this.classList.toggle('completed');
+            });
+
+            taskList.appendChild(newTask);
+
+            // Reset form and close modal
+            document.getElementById('exerciseName').value = '';
+            document.getElementById('exerciseTag').value = '';
+            document.getElementById('exercisePlan').value = '';
+            document.querySelectorAll('.exercise-type-btn').forEach(b => b.classList.remove('selected'));
+            selectedExerciseType = '';
+            addModal.classList.remove('active');
+
+            // Scroll to bottom of task list
+            taskList.lastElementChild.scrollIntoView({ behavior: 'smooth' });
         });
     </script>
 </body>
