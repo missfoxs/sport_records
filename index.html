@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>运动记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f2f4f8;
+            color: #1a1a1a;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #ffffff;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .stats-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Period Selector */
+        .period-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 0 20px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 20px;
+            background: white;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #667eea;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tasks Section */
+        .tasks-section {
+            padding: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-item:active {
+            transform: scale(0.98);
+            background: #e9ecef;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox.checked {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            position: relative;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: 800;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .task-item.completed .task-name {
+            text-decoration: line-through;
+            color: #adb5bd;
+        }
+
+        .task-details {
+            font-size: 13px;
+            color: #6c757d;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .task-tag {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #adb5bd;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="logo">FITLOG</div>
+                <a href="statistics.html" class="stats-btn" style="text-decoration: none;">统计</a>
+            </div>
+            <div class="period-tabs">
+                <button class="tab">本周</button>
+                <button class="tab active">本月</button>
+                <button class="tab">今年</button>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">锻炼天数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">连续锻炼</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">120</div>
+                    <div class="stat-label">总时长(分)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">850</div>
+                    <div class="stat-label">消耗卡路里</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="tasks-section">
+            <div class="section-header">
+                <div class="section-title">今日任务</div>
+                <button class="add-btn">+ 添加运动</button>
+            </div>
+
+            <div class="task-list">
+                <div class="task-item">
+                    <div class="task-checkbox checked"></div>
+                    <div class="task-info">
+                        <div class="task-name">深蹲</div>
+                        <div class="task-details">
+                            <span class="task-tag">腿部</span>
+                            <span>3组 × 15次</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item completed">
+                    <div class="task-checkbox checked"></div>
+                    <div class="task-info">
+                        <div class="task-name">肩部哑铃</div>
+                        <div class="task-details">
+                            <span class="task-tag">肩部</span>
+                            <span>3组 × 12次</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-checkbox"></div>
+                    <div class="task-info">
+                        <div class="task-name">背部哑铃</div>
+                        <div class="task-details">
+                            <span class="task-tag">背部</span>
+                            <span>3组 × 12次</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-checkbox"></div>
+                    <div class="task-info">
+                        <div class="task-name">跑步</div>
+                        <div class="task-details">
+                            <span class="task-tag">有氧</span>
+                            <span>30分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">首页</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">统计</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Task checkbox
+        document.querySelectorAll('.task-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const checkbox = this.querySelector('.task-checkbox');
+                checkbox.classList.toggle('checked');
+                this.classList.toggle('completed');
+            });
+        });
+    </script>
+</body>
+</html>
