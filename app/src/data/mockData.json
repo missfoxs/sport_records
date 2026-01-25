@@ -1,0 +1,166 @@
+{
+  "tasks": [
+    {
+      "id": "mock-task-1",
+      "name": "深蹲",
+      "type": "strength",
+      "tag": "腿部",
+      "plan": "3组×15次",
+      "done": false,
+      "date": "2026-01-24",
+      "createdAt": "2026-01-24T08:00:00.000Z"
+    },
+    {
+      "id": "mock-task-2",
+      "name": "慢跑",
+      "type": "cardio",
+      "tag": "有氧",
+      "plan": "5公里",
+      "done": true,
+      "date": "2026-01-24",
+      "createdAt": "2026-01-24T08:00:00.000Z"
+    },
+    {
+      "id": "mock-task-3",
+      "name": "俯卧撑",
+      "type": "strength",
+      "tag": "胸部",
+      "plan": "4组×12次",
+      "done": false,
+      "date": "2026-01-24",
+      "createdAt": "2026-01-24T08:00:00.000Z"
+    },
+    {
+      "id": "mock-task-4",
+      "name": "瑜伽",
+      "type": "stretching",
+      "tag": "拉伸",
+      "plan": "30分钟",
+      "done": false,
+      "date": "2026-01-24",
+      "createdAt": "2026-01-24T08:00:00.000Z"
+    }
+  ],
+  "records": [
+    {
+      "id": "mock-record-1",
+      "taskId": "mock-task-2",
+      "date": "2026-01-24",
+      "taskSnapshot": {
+        "name": "慢跑",
+        "type": "cardio",
+        "tag": "有氧",
+        "plan": "5公里"
+      },
+      "completedAt": "2026-01-24T10:30:00.000Z"
+    },
+    {
+      "id": "mock-record-2",
+      "taskId": "mock-task-1",
+      "date": "2026-01-23",
+      "taskSnapshot": {
+        "name": "深蹲",
+        "type": "strength",
+        "tag": "腿部",
+        "plan": "3组×15次"
+      },
+      "completedAt": "2026-01-23T19:00:00.000Z"
+    },
+    {
+      "id": "mock-record-3",
+      "taskId": "mock-task-3",
+      "date": "2026-01-23",
+      "taskSnapshot": {
+        "name": "俯卧撑",
+        "type": "strength",
+        "tag": "胸部",
+        "plan": "4组×12次"
+      },
+      "completedAt": "2026-01-23T19:15:00.000Z"
+    },
+    {
+      "id": "mock-record-4",
+      "taskId": "mock-task-2",
+      "date": "2026-01-22",
+      "taskSnapshot": {
+        "name": "慢跑",
+        "type": "cardio",
+        "tag": "有氧",
+        "plan": "5公里"
+      },
+      "completedAt": "2026-01-22T18:00:00.000Z"
+    },
+    {
+      "id": "mock-record-5",
+      "taskId": "mock-task-1",
+      "date": "2026-01-22",
+      "taskSnapshot": {
+        "name": "深蹲",
+        "type": "strength",
+        "tag": "腿部",
+        "plan": "3组×15次"
+      },
+      "completedAt": "2026-01-22T19:00:00.000Z"
+    },
+    {
+      "id": "mock-record-6",
+      "taskId": "mock-task-4",
+      "date": "2026-01-21",
+      "taskSnapshot": {
+        "name": "瑜伽",
+        "type": "stretching",
+        "tag": "拉伸",
+        "plan": "30分钟"
+      },
+      "completedAt": "2026-01-21T20:00:00.000Z"
+    },
+    {
+      "id": "mock-record-7",
+      "taskId": "mock-task-2",
+      "date": "2026-01-21",
+      "taskSnapshot": {
+        "name": "慢跑",
+        "type": "cardio",
+        "tag": "有氧",
+        "plan": "5公里"
+      },
+      "completedAt": "2026-01-21T18:00:00.000Z"
+    },
+    {
+      "id": "mock-record-8",
+      "taskId": "mock-task-3",
+      "date": "2026-01-20",
+      "taskSnapshot": {
+        "name": "俯卧撑",
+        "type": "strength",
+        "tag": "胸部",
+        "plan": "4组×12次"
+      },
+      "completedAt": "2026-01-20T19:00:00.000Z"
+    },
+    {
+      "id": "mock-record-9",
+      "taskId": "mock-task-1",
+      "date": "2026-01-20",
+      "taskSnapshot": {
+        "name": "深蹲",
+        "type": "strength",
+        "tag": "腿部",
+        "plan": "3组×15次"
+      },
+      "completedAt": "2026-01-20T19:15:00.000Z"
+    },
+    {
+      "id": "mock-record-10",
+      "taskId": "mock-task-2",
+      "date": "2026-01-19",
+      "taskSnapshot": {
+        "name": "慢跑",
+        "type": "cardio",
+        "tag": "有氧",
+        "plan": "5公里"
+      },
+      "completedAt": "2026-01-19T18:00:00.000Z"
+    }
+  ]
+}

@@ -13,6 +13,8 @@ import {useSportStore, getTodayTasks, getExerciseDays, getConsecutiveDays} from 
 import TaskList from '../components/TaskList';
 import StatCard from '../components/StatCard';
 import AddExerciseFormModal from '../components/AddExerciseFormModal';
+import DebugPanel from '../components/DebugPanel';
+import {useMockData} from '../data/useMockData';
 import type {PeriodType} from '../types';
 
 function HomeScreen() {
@@ -28,9 +30,13 @@ function HomeScreen() {
     initializeDefaultTasks,
   } = useSportStore();
 
+  const {loadMockData} = useMockData();
+
   // 初始化默认任务（只在组件首次加载时执行一次）
   useEffect(() => {
     initializeDefaultTasks();
+    // 开发时临时加载测试数据（记得删除）
+    // loadMockData();
   }, [initializeDefaultTasks]);
 
   // 获取今日任务
@@ -146,6 +152,9 @@ function HomeScreen() {
             onToggleTask={handleToggleTask}
           />
         </View>
+
+        {/* Debug Panel - 开发时使用，记得删除 */}
+        <DebugPanel />
       </ScrollView>
 
       {/* Add Exercise Form Modal */}

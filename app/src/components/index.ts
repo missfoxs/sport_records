@@ -5,3 +5,4 @@ export {default as TaskItem} from './TaskItem';
 export {default as TaskList} from './TaskList';
 export {default as AddExerciseFormModal} from './AddExerciseFormModal';
 export {default as StatCard} from './StatCard';
+export {default as CalendarHeatmap} from './CalendarHeatmap';

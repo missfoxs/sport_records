@@ -1,5 +1,5 @@
 import dayjs from '../utils/dayjs';
-import type {Task, Record, PeriodType} from '../types';
+import type {Record, PeriodType} from '../types';
 
 /**
  * 获取今天的日期字符串
@@ -11,9 +11,9 @@ export function getTodayDate(): string {
 /**
  * 获取今日任务列表
  */
-export function getTodayTasks(tasks: Task[]): Task[] {
+export function getTodayTasks(tasks: any[]) {
   const today = getTodayDate();
-  return tasks.filter((task) => task.date === today);
+  return tasks.filter((task: any) => task.date === today);
 }
 
 /**
@@ -102,11 +102,11 @@ export function getRecentDaysStats(
   records: Record[],
   days: number = 7,
 ): Array<{date: string; count: number}> {
-  const today = dayjs();
+  const today = getTodayDate();
   const stats: Array<{date: string; count: number}> = [];
 
   for (let i = days - 1; i >= 0; i--) {
-    const date = today.subtract(i, 'day').format('YYYY-MM-DD');
+    const date = dayjs().subtract(i, 'day').format('YYYY-MM-DD');
     const count = records.filter((r) => r.date === date).length;
     stats.push({date, count});
   }
@@ -115,43 +115,35 @@ export function getRecentDaysStats(
 }
 
 /**
+ * 获取每月的记录统计（用于趋势图 - 月度视图）
+ */
+export function getMonthlyStats(
+  records: Record[],
+): Array<{date: string; count: number}> {
+  const monthlyStats = new Map<string, number>();
+
+  records.forEach(record => {
+    const date = record.date.slice(0, 7); // YYYY-MM
+    monthlyStats.set(date, (monthlyStats.get(date) || 0) + 1);
+  });
+
+  return Array.from(monthlyStats.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([date, count]) => ({date, count}));
+}
+
+/**
  * 按类型统计记录
  */
-export function getRecordsByType(records: Record[]): Record<
-  string,
-  number
-> {
+export function getRecordsByType(records: Record[]): Record<string, number> {
   const stats: Record<string, number> = {};
 
-  records.forEach((record) => {
+  records.forEach(record => {
     const type = record.taskSnapshot.type;
     stats[type] = (stats[type] || 0) + 1;
   });
 
   return stats;
-}
-
-/**
- * 获取本月日历热力图数据
- */
-export function getMonthlyHeatmap(records: Record[]): Record<
-  string,
-  number
-> {
-  const now = dayjs();
-  const start = now.startOf('month');
-  const end = now.endOf('month');
-  const heatmap: Record<string, number> = {};
-
-  records.forEach((record) => {
-    const recordDate = dayjs(record.date);
-    if (recordDate.isAfter(start) && recordDate.isBefore(end)) {
-      const dateStr = record.date;
-      heatmap[dateStr] = (heatmap[dateStr] || 0) + 1;
-    }
-  });
-
-  return heatmap;
 }
 
 /**
@@ -163,4 +155,38 @@ export function getHeatLevel(count: number): number {
   if (count <= 4) return 2;
   if (count <= 6) return 3;
   return 4;
+}
+
+/**
+ * 获取指定月份的日历热力图数据
+ */
+export function getMonthlyHeatmap(
+  records: Record[],
+  month?: number,
+  year?: number,
+): Record<string, number> {
+  const now = dayjs();
+  const targetMonth = month !== undefined ? month : now.month();
+  const targetYear = year !== undefined ? year : now.year();
+  
+  const start = dayjs().year(targetYear).month(targetMonth).startOf('month');
+  const end = dayjs().year(targetYear).month(targetMonth).endOf('month');
+
+  const heatmap: Record<string, number> = {};
+
+  records.forEach(record => {
+    const recordDate = dayjs(record.date);
+    const dateStr = record.date;
+    // 检查日期是否在指定月份范围内（包含首尾）
+    // 使用 format 比较，确保包含边界
+    const recordDateStr = recordDate.format('YYYY-MM-DD');
+    const startStr = start.format('YYYY-MM-DD');
+    const endStr = end.format('YYYY-MM-DD');
+    
+    if (recordDateStr >= startStr && recordDateStr <= endStr) {
+      heatmap[dateStr] = (heatmap[dateStr] || 0) + 1;
+    }
+  });
+
+  return heatmap;
 }

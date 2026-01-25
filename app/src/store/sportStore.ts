@@ -32,6 +32,10 @@ interface SportStore {
 
   // Actions - 数据清理
   clearAllData: () => void;
+
+  // Actions - 测试数据
+  loadMockData: () => void; // 加载测试数据
+  clearMockData: () => void; // 清除测试数据（删除所有以 mock- 开头的 ID）
 }
 
 /**
@@ -188,6 +192,52 @@ export const useSportStore = create<SportStore>()(
           period: 'week',
           defaultTasksInitialized: {},
         });
+      },
+
+      // 加载测试数据
+      loadMockData: () => {
+        const mockData = require('../data/mockData.json');
+        const today = getTodayDate();
+        
+        set((state) => {
+          // 检查是否已经加载过测试数据（避免重复加载）
+          const hasMockData = state.tasks.some((t) => t.id.startsWith('mock-')) ||
+            state.records.some((r) => r.id.startsWith('mock-'));
+          
+          if (hasMockData) {
+            return state; // 已经加载过，不重复加载
+          }
+
+          // 更新任务日期为今天（确保今日任务能显示）
+          const updatedTasks = mockData.tasks.map((task: Task) => ({
+            ...task,
+            date: today, // 所有任务都设置为今天
+          }));
+
+          // 更新记录日期为最近几天（确保统计能显示）
+          const updatedRecords = mockData.records.map((record: Record, index: number) => {
+            // 将日期更新为从今天往前推的天数
+            const daysAgo = Math.min(index, 6); // 最多6天前
+            const recordDate = dayjs(today).subtract(daysAgo, 'day').format('YYYY-MM-DD');
+            return {
+              ...record,
+              date: recordDate,
+            };
+          });
+
+          return {
+            tasks: [...state.tasks, ...updatedTasks],
+            records: [...state.records, ...updatedRecords],
+          };
+        });
+      },
+
+      // 清除测试数据（删除所有以 mock- 开头的 ID）
+      clearMockData: () => {
+        set((state) => ({
+          tasks: state.tasks.filter((t) => !t.id.startsWith('mock-')),
+          records: state.records.filter((r) => !r.id.startsWith('mock-')),
+        }));
       },
 
       // 初始化今天的默认任务
