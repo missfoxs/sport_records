@@ -1,8 +1,7 @@
 import {create} from 'zustand';
 import {persist, createJSONStorage} from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import dayjs from '../utils/dayjs';
-import {nanoid} from 'nanoid';
+import dayjs, {generateId} from '../utils/dayjs';
 import type {Task, Record, PeriodType, ExerciseType} from '../types';
 
 /**
@@ -13,6 +12,7 @@ interface SportStore {
   tasks: Task[];
   records: Record[];
   period: PeriodType; // 当前选择的周期（本周/本月/今年）
+  defaultTasksInitialized: { [key: string]: boolean }; // 记录哪些日期已经初始化了默认任务
 
   // Actions - 任务管理
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'done'>) => void;
@@ -26,6 +26,9 @@ interface SportStore {
 
   // Actions - 周期切换
   setPeriod: (period: PeriodType) => void;
+
+  // Actions - 默认任务
+  initializeDefaultTasks: () => void; // 初始化今天的默认任务
 
   // Actions - 数据清理
   clearAllData: () => void;
@@ -67,12 +70,13 @@ export const useSportStore = create<SportStore>()(
       tasks: [],
       records: [],
       period: 'week',
+      defaultTasksInitialized: {},
 
       // 添加任务
       addTask: (taskData) => {
         const newTask: Task = {
           ...taskData,
-          id: nanoid(),
+          id: generateId(),
           done: false,
           createdAt: getNowISO(),
         };
@@ -130,7 +134,7 @@ export const useSportStore = create<SportStore>()(
         } else {
           // 完成：更新 task.done，添加 record
           const newRecord: Record = {
-            id: nanoid(),
+            id: generateId(),
             taskId: id,
             date: today,
             taskSnapshot: createTaskSnapshot(task),
@@ -150,7 +154,7 @@ export const useSportStore = create<SportStore>()(
       addRecord: (taskId, task) => {
         const today = getTodayDate();
         const newRecord: Record = {
-          id: nanoid(),
+          id: generateId(),
           taskId,
           date: today,
           taskSnapshot: createTaskSnapshot(task),
@@ -182,7 +186,53 @@ export const useSportStore = create<SportStore>()(
           tasks: [],
           records: [],
           period: 'week',
+          defaultTasksInitialized: {},
         });
+      },
+
+      // 初始化今天的默认任务
+      initializeDefaultTasks: () => {
+        const today = getTodayDate();
+        const state = get();
+
+        // 检查今天是否已经初始化过默认任务
+        if (state.defaultTasksInitialized[today]) {
+          return;
+        }
+
+        // 默认任务
+        const defaultTasks: Omit<Task, 'id' | 'createdAt' | 'done'>[] = [
+          {
+            name: '深蹲',
+            type: 'strength',
+            tag: '腿部',
+            plan: '15次 × 4组',
+            date: today,
+          },
+          {
+            name: '跑步',
+            type: 'cardio',
+            tag: '有氧',
+            plan: '5公里',
+            date: today,
+          },
+        ];
+
+        // 添加默认任务
+        const newTasks = defaultTasks.map((taskData) => ({
+          ...taskData,
+          id: generateId(),
+          done: false,
+          createdAt: getNowISO(),
+        }));
+
+        set((state) => ({
+          tasks: [...state.tasks, ...newTasks],
+          defaultTasksInitialized: {
+            ...state.defaultTasksInitialized,
+            [today]: true,
+          },
+        }));
       },
     }),
     {
@@ -193,6 +243,7 @@ export const useSportStore = create<SportStore>()(
         tasks: state.tasks,
         records: state.records,
         period: state.period,
+        defaultTasksInitialized: state.defaultTasksInitialized,
       }),
     },
   ),

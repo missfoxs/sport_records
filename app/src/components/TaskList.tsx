@@ -15,37 +15,34 @@ function TaskList({tasks, onToggleTask, onDeleteTask}: TaskListProps) {
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyEmoji}>📝</Text>
         <Text style={styles.emptyText}>还没有今日任务</Text>
-        <Text style={styles.emptySubtext}>点击右下角 + 添加运动</Text>
+        <Text style={styles.emptySubtext}>点击 + 添加运动按钮开始记录</Text>
       </View>
     );
   }
 
   return (
-    <FlatList
-      data={tasks}
-      keyExtractor={(item) => item.id}
-      renderItem={({item}) => (
+    <View style={styles.container}>
+      {tasks.map((task) => (
         <TaskItem
-          task={item}
+          key={task.id}
+          task={task}
           onToggle={onToggleTask}
           onDelete={onDeleteTask}
         />
-      )}
-      contentContainerStyle={styles.listContent}
-      showsVerticalScrollIndicator={false}
-    />
+      ))}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  listContent: {
-    paddingVertical: 8,
+  container: {
+    flex: 1,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    paddingVertical: 80,
   },
   emptyEmoji: {
     fontSize: 64,
@@ -54,12 +51,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#888888',
+    color: '#6c757d',
     textAlign: 'center',
   },
 });

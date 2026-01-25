@@ -4,12 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a fitness tracking application (运动记录 - Sports Records) currently in the prototype stage. The project contains a single HTML prototype file that demonstrates the UI/UX for a mobile fitness tracking app.
+This is a fitness tracking application (运动记录 - Sports Records) currently in the prototype stage. The project contains HTML prototype files that demonstrate the UI/UX for a mobile fitness tracking app.
 
 ## Current State
 
 The codebase consists of:
-- `fitness-prototype.html` - A standalone HTML/CSS prototype demonstrating the app's visual design and user interface
+- `index.html` - Main page with exercise tasks, stats, and add exercise modal
+- `statistics.html` - Statistics page with charts and workout records
+
+## Installed Plugins/Skills
+
+- **Marketplace**: `anthropic-agent-skills` (configured)
+- To list available skills: Run `/plugin list` in Claude Code interface
+- To install a skill: Run `/plugin install <skill-name>`
 
 ## Architecture
 
@@ -17,31 +24,38 @@ The codebase consists of:
 
 The prototype uses pure HTML/CSS with:
 - **Layout**: Mobile-first design with a max-width container (430px) simulating a phone screen
-- **Styling**: Custom CSS with linear gradients, custom fonts (Bebas Neue, Oswald), and a dark theme
+- **Styling**: Custom CSS with linear gradients, custom fonts, and a light theme
 - **Design System**:
-  - Primary colors: `#00ff88` (neon green) and `#00d4ff` (cyan)
-  - Background: Dark gradients (#0a0a0a to #1a1a1a)
-  - Border radius: 25px for cards, 40px for main container
-  - Glassmorphism: backdrop-filter blur effects on bottom navigation
+  - Primary colors: `#667eea` (purple) to `#764ba2` gradient
+  - Background: White/light gray (#f2f4f8)
+  - Border radius: 16-20px for cards
+  - Modal: Bottom sheet design with slide-up animation
 
 ### UI Components
 
 The prototype showcases these components:
-- **Header**: App title ("FITLOG") with profile button
-- **Stats Bar**: Grid of 3 statistics (streak, weekly progress, total calories)
-- **Task Cards**: Daily workout tasks with completion status, icons, and details
-- **Calendar Row**: Weekly calendar showing workout days
-- **Bottom Navigation**: 4-tab navigation with icons
-- **Floating Action Button (FAB)**: "+" button for adding new entries
+- **Header**: App title ("FITLOG") with navigation buttons
+- **Stats Bar**: Grid of 2 statistics (workout days, streak)
+- **Task Cards**: Daily workout tasks with completion status, tags, and details
+- **Add Exercise Modal**: Bottom sheet with exercise type selection, name input, tag, and plan
+- **Bottom Navigation**: 2-tab navigation (Home, Statistics)
+- **Statistics Page**: Trend charts, workout distribution, personal records, calendar heatmap
 
 ### Visual Design Patterns
 
-- Gradient text effects for branding elements
-- Hover states with scale transforms and shadow enhancements
+- Gradient backgrounds for headers and buttons
+- Hover/active states with scale transforms
 - Card-based layout with subtle borders and backgrounds
 - Grid-based layouts for stats and navigation
 - Emoji-based icons throughout
+- Chart.js for data visualization
 
 ## Development Notes
 
-This is a visual prototype only - there is no backend, JavaScript functionality, or build system currently implemented. The file can be opened directly in a browser to view the design.
+This is a visual prototype only - there is no backend, React Native implementation, or build system currently implemented. The files can be opened directly in a browser to view the design.
+
+Future implementation will use React Native with:
+- State management: Zustand
+- Date/time: dayjs
+- Navigation: React Navigation
+- Charts: react-native-chart-kit or similar

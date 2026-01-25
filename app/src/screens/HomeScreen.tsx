@@ -1,16 +1,50 @@
-import React, {useState, useCallback} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useSportStore, getTodayTasks} from '../store';
+import React, {useState, useCallback, useMemo, useEffect} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  SafeAreaView,
+} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {useSportStore, getTodayTasks, getExerciseDays, getConsecutiveDays} from '../store';
 import TaskList from '../components/TaskList';
+import StatCard from '../components/StatCard';
 import AddExerciseFormModal from '../components/AddExerciseFormModal';
+import type {PeriodType} from '../types';
 
 function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const {tasks, toggleTask, addTask, deleteTask} = useSportStore();
+  const [period, setPeriod] = useState<PeriodType>('month');
 
-  // 获取今日任务（使用 dayjs 筛选）
-  const todayTasks = getTodayTasks(tasks);
+  const {
+    tasks,
+    records,
+    toggleTask,
+    addTask,
+    setPeriod: storeSetPeriod,
+    initializeDefaultTasks,
+  } = useSportStore();
+
+  // 初始化默认任务（只在组件首次加载时执行一次）
+  useEffect(() => {
+    initializeDefaultTasks();
+  }, [initializeDefaultTasks]);
+
+  // 获取今日任务
+  const todayTasks = useMemo(() => getTodayTasks(tasks), [tasks]);
+
+  // 获取统计信息
+  const stats = useMemo(() => {
+    const exerciseDays = getExerciseDays(records);
+    const consecutiveDays = getConsecutiveDays(records);
+    return {
+      exerciseDays,
+      consecutiveDays,
+    };
+  }, [records]);
 
   // 打开添加运动表单
   const handleOpenAddForm = useCallback(() => {
@@ -31,12 +65,13 @@ function HomeScreen() {
       plan?: string;
       date: string;
     }) => {
+      console.log('handleAddExercise called with:', data);
       addTask(data);
     },
     [addTask],
   );
 
-  // 切换任务完成状态（会自动更新 records）
+  // 切换任务完成状态
   const handleToggleTask = useCallback(
     (id: string) => {
       toggleTask(id);
@@ -44,32 +79,76 @@ function HomeScreen() {
     [toggleTask],
   );
 
+  // 切换周期
+  const handlePeriodChange = useCallback(
+    (newPeriod: PeriodType) => {
+      setPeriod(newPeriod);
+      storeSetPeriod(newPeriod);
+    },
+    [storeSetPeriod],
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>今日任务</Text>
-        <Text style={styles.headerSubtitle}>
-          {todayTasks.length} 个任务
-        </Text>
+      <StatusBar barStyle="light-content" />
+
+      {/* Header with Gradient */}
+      <View style={styles.headerGradient}>
+        <View style={styles.header}>
+          <Text style={styles.logo}>FITLOG</Text>
+          <TouchableOpacity style={styles.statsBtn}>
+            <Text style={styles.statsBtnText}>统计</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Period Tabs */}
+        <View style={styles.periodTabs}>
+          {(['week', 'month', 'year'] as PeriodType[]).map((p) => (
+            <TouchableOpacity
+              key={p}
+              style={[styles.tab, period === p && styles.tabActive]}
+              onPress={() => handlePeriodChange(p)}>
+              <Text
+                style={[styles.tabText, period === p && styles.tabTextActive]}>
+                {p === 'week' ? '本周' : p === 'month' ? '本月' : '今年'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
-      <View style={styles.content}>
-        <TaskList
-          tasks={todayTasks}
-          onToggleTask={handleToggleTask}
-          onDeleteTask={deleteTask}
-        />
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <View style={styles.statsGrid}>
+            <StatCard value={stats.exerciseDays} label="锻炼天数" />
+            <StatCard value={stats.consecutiveDays} label="连续锻炼" />
+          </View>
+        </View>
 
-      {/* 浮动添加按钮 */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={handleOpenAddForm}
-        activeOpacity={0.8}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+        {/* Tasks Section */}
+        <View style={styles.tasksSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>今日任务</Text>
+            <TouchableOpacity
+              style={styles.addBtn}
+              onPress={handleOpenAddForm}
+              activeOpacity={0.8}>
+              <Text style={styles.addBtnText}>+ 添加运动</Text>
+            </TouchableOpacity>
+          </View>
 
-      {/* 添加运动表单 Modal */}
+          <TaskList
+            tasks={todayTasks}
+            onToggleTask={handleToggleTask}
+          />
+        </View>
+      </ScrollView>
+
+      {/* Add Exercise Form Modal */}
       <AddExerciseFormModal
         visible={modalVisible}
         onClose={handleCloseModal}
@@ -82,52 +161,115 @@ function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#f2f4f8',
+  },
+  headerGradient: {
+    backgroundColor: '#667eea',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    paddingBottom: 20,
   },
   header: {
-    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
     paddingTop: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1a1a1a',
+    backgroundColor: 'transparent',
   },
-  headerTitle: {
+  logo: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#ffffff',
-    marginBottom: 4,
+    letterSpacing: -0.5,
   },
-  headerSubtitle: {
+  statsBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  statsBtnText: {
+    color: '#ffffff',
     fontSize: 14,
-    color: '#888888',
+    fontWeight: '600',
   },
-  content: {
+  periodTabs: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: 'transparent',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+  },
+  tabActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  tabText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  tabTextActive: {
+    color: '#ffffff',
+  },
+  scrollView: {
     flex: 1,
   },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#00ff88',
+  scrollContent: {
+    paddingBottom: 80,
+  },
+  statsSection: {
+    backgroundColor: '#ffffff',
+    marginTop: -10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingTop: 30,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  tasksSection: {
+    padding: 20,
+    backgroundColor: '#ffffff',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#00ff88',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  addBtn: {
+    backgroundColor: '#667eea',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    shadowColor: '#667eea',
     shadowOffset: {
       width: 0,
       height: 4,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 8,
   },
-  fabText: {
-    fontSize: 32,
-    fontWeight: '300',
-    color: '#000000',
-    lineHeight: 32,
+  addBtnText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
 

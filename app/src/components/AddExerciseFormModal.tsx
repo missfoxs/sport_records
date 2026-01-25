@@ -9,6 +9,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {ExerciseType} from '../types';
@@ -28,9 +29,9 @@ interface AddExerciseFormModalProps {
 
 const exerciseTypes: Array<{type: ExerciseType; label: string; emoji: string}> =
   [
-    {type: 'strength', label: '力量', emoji: '💪'},
-    {type: 'cardio', label: '有氧', emoji: '🏃'},
-    {type: 'stretching', label: '拉伸', emoji: '🧘'},
+    {type: 'strength', label: '力量训练', emoji: '💪'},
+    {type: 'cardio', label: '有氧运动', emoji: '🏃'},
+    {type: 'stretching', label: '拉伸放松', emoji: '🧘'},
   ];
 
 function AddExerciseFormModal({
@@ -48,13 +49,17 @@ function AddExerciseFormModal({
       return;
     }
 
-    onSubmit({
+    const exerciseData = {
       name: name.trim(),
       type,
       tag: tag.trim() || undefined,
       plan: plan.trim() || undefined,
       date: getTodayDate(),
-    });
+    };
+
+    console.log('Submitting exercise:', exerciseData);
+
+    onSubmit(exerciseData);
 
     // 重置表单
     setName('');
@@ -73,234 +78,234 @@ function AddExerciseFormModal({
     onClose();
   };
 
+  const handleBackdropPress = () => {
+    handleClose();
+  };
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent={true}
       onRequestClose={handleClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.modalContainer}>
-        <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-          <View style={styles.modalContent}>
-            <View style={styles.header}>
-              <Text style={styles.title}>添加运动</Text>
-              <Text style={styles.subtitle}>记录你的运动计划</Text>
-            </View>
-
-            <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.content}
-              keyboardShouldPersistTaps="handled">
-              <View style={styles.section}>
-                <Text style={styles.label}>运动名称 *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="例如：深蹲、慢跑、瑜伽..."
-                  placeholderTextColor="#666"
-                  value={name}
-                  onChangeText={setName}
-                />
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.label}>运动类型 *</Text>
-                <View style={styles.typeContainer}>
-                  {exerciseTypes.map((item) => (
-                    <TouchableOpacity
-                      key={item.type}
-                      style={[
-                        styles.typeButton,
-                        type === item.type && styles.typeButtonActive,
-                      ]}
-                      onPress={() => setType(item.type)}>
-                      <Text style={styles.typeEmoji}>{item.emoji}</Text>
-                      <Text
-                        style={[
-                          styles.typeLabel,
-                          type === item.type && styles.typeLabelActive,
-                        ]}>
-                        {item.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+      <TouchableWithoutFeedback onPress={handleBackdropPress}>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>添加运动</Text>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={handleClose}>
+                    <Text style={styles.closeButtonText}>×</Text>
+                  </TouchableOpacity>
                 </View>
-              </View>
 
-              <View style={styles.section}>
-                <Text style={styles.label}>标签（可选）</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="例如：腿部、胸部、有氧..."
-                  placeholderTextColor="#666"
-                  value={tag}
-                  onChangeText={setTag}
-                />
-              </View>
+                <ScrollView
+                  style={styles.scrollView}
+                  contentContainerStyle={styles.contentContainer}
+                  keyboardShouldPersistTaps="handled">
+                  {/* Exercise Type Selection */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>选择运动类型</Text>
+                    <View style={styles.exerciseTypesGrid}>
+                      {exerciseTypes.map((item) => (
+                        <TouchableOpacity
+                          key={item.type}
+                          style={[
+                            styles.exerciseTypeBtn,
+                            type === item.type && styles.exerciseTypeBtnSelected,
+                          ]}
+                          onPress={() => setType(item.type)}>
+                          <Text style={styles.exerciseTypeIcon}>
+                            {item.emoji}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.exerciseTypeLabel,
+                              type === item.type && styles.exerciseTypeLabelSelected,
+                            ]}>
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
 
-              <View style={styles.section}>
-                <Text style={styles.label}>计划（可选）</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="例如：3组×15次、30分钟..."
-                  placeholderTextColor="#666"
-                  value={plan}
-                  onChangeText={setPlan}
-                />
-              </View>
-            </ScrollView>
+                  {/* Exercise Name */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>运动名称</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      placeholder="例如：深蹲、慢跑、俯卧撑..."
+                      placeholderTextColor="#999"
+                      value={name}
+                      onChangeText={setName}
+                    />
+                  </View>
 
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={handleClose}>
-                <Text style={styles.cancelButtonText}>取消</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.submitButton,
-                  !name.trim() && styles.submitButtonDisabled,
-                ]}
-                onPress={handleSubmit}
-                disabled={!name.trim()}>
-                <Text
-                  style={[
-                    styles.submitButtonText,
-                    !name.trim() && styles.submitButtonTextDisabled,
-                  ]}>
-                  添加
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+                  {/* Tag */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>部位标签</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      placeholder="例如：腿部、胸部、有氧..."
+                      placeholderTextColor="#999"
+                      value={tag}
+                      onChangeText={setTag}
+                    />
+                  </View>
+
+                  {/* Plan */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>训练计划</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      placeholder="例如：3组 × 15次"
+                      placeholderTextColor="#999"
+                      value={plan}
+                      onChangeText={setPlan}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.submitButton,
+                      !name.trim() && styles.submitButtonDisabled,
+                    ]}
+                    onPress={handleSubmit}
+                    disabled={!name.trim()}
+                    activeOpacity={0.8}>
+                    <Text style={styles.submitButtonText}>确认添加</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
-  safeArea: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
   modalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '90%',
-    paddingBottom: Platform.OS === 'ios' ? 0 : 20,
+    maxHeight: '85%',
   },
-  header: {
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#2a2a2a',
+    borderBottomColor: '#e9ecef',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 8,
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#888888',
+  closeButton: {
+    backgroundColor: '#f8f9fa',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: 24,
+    color: '#6c757d',
+    lineHeight: 24,
   },
   scrollView: {
     flex: 1,
   },
-  content: {
+  contentContainer: {
     padding: 20,
+    paddingBottom: 40,
   },
-  section: {
-    marginBottom: 24,
+  formGroup: {
+    marginBottom: 20,
   },
-  label: {
+  formLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
+    color: '#1a1a1a',
+    marginBottom: 10,
   },
-  input: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  typeContainer: {
+  exerciseTypesGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
-  typeButton: {
+  exerciseTypeBtn: {
     flex: 1,
-    backgroundColor: '#2a2a2a',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#e9ecef',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
   },
-  typeButtonActive: {
-    borderColor: '#00ff88',
-    backgroundColor: '#1a3a2a',
+  exerciseTypeBtnSelected: {
+    borderColor: '#667eea',
+    backgroundColor: '#f0f3ff',
   },
-  typeEmoji: {
+  exerciseTypeIcon: {
     fontSize: 32,
     marginBottom: 8,
   },
-  typeLabel: {
-    fontSize: 14,
-    color: '#888888',
+  exerciseTypeLabel: {
+    fontSize: 12,
     fontWeight: '600',
+    color: '#495057',
   },
-  typeLabelActive: {
-    color: '#00ff88',
+  exerciseTypeLabelSelected: {
+    color: '#667eea',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#2a2a2a',
-  },
-  button: {
-    flex: 1,
-    padding: 16,
+  formInput: {
+    padding: 14,
+    borderWidth: 2,
+    borderColor: '#e9ecef',
     borderRadius: 12,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#2a2a2a',
-  },
-  cancelButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    color: '#1a1a1a',
+    backgroundColor: '#f8f9fa',
   },
   submitButton: {
-    backgroundColor: '#00ff88',
+    paddingVertical: 16,
+    backgroundColor: '#667eea',
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#667eea',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   submitButtonDisabled: {
-    backgroundColor: '#2a2a2a',
-    opacity: 0.5,
+    backgroundColor: '#e9ecef',
+    shadowOpacity: 0,
   },
   submitButtonText: {
+    color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  submitButtonTextDisabled: {
-    color: '#666',
+    fontWeight: '700',
   },
 });
 

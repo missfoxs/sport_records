@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text} from 'react-native';
+import {Text, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
@@ -16,21 +16,10 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#00ff88',
-        tabBarInactiveTintColor: '#888888',
-        tabBarStyle: {
-          backgroundColor: '#1a1a1a',
-          borderTopWidth: 0,
-          elevation: 0,
-          shadowOpacity: 0,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-        },
+        tabBarActiveTintColor: '#667eea',
+        tabBarInactiveTintColor: '#adb5bd',
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabLabel,
       }}>
       <Tab.Screen
         name="Home"
@@ -56,7 +45,7 @@ function TabNavigator() {
   );
 }
 
-// 简单的图标组件（后续可以替换为 react-native-vector-icons）
+// 简单的图标组件（使用 emoji，后续可以替换为 react-native-vector-icons）
 function TabIcon({
   name,
   color,
@@ -72,8 +61,37 @@ function TabIcon({
   };
 
   return (
-    <Text style={{fontSize: size, color}}>{iconMap[name] || '•'}</Text>
+    <Text style={[styles.tabIcon, {fontSize: size, color}]}>
+      {iconMap[name] || '•'}
+    </Text>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+    height: 80,
+    paddingBottom: 20,
+    paddingTop: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  tabIcon: {
+    lineHeight: 24,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+});
 
 export default TabNavigator;
