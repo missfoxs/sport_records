@@ -18,31 +18,42 @@ export function getTodayTasks(tasks: any[]) {
 
 /**
  * 根据周期获取日期范围
+ * @param period 周期类型
+ * @param offset 偏移量（0 = 当前，-1 = 上一个，1 = 下一个）
  */
-export function getPeriodDateRange(period: PeriodType): {
+export function getPeriodDateRange(
+  period: PeriodType,
+  offset: number = 0,
+): {
   start: string;
   end: string;
 } {
   const now = dayjs();
+  let baseDate: dayjs.Dayjs;
   let start: dayjs.Dayjs;
   let end: dayjs.Dayjs;
 
+  // 根据偏移量计算基准日期
   switch (period) {
     case 'week':
-      start = now.startOf('week');
-      end = now.endOf('week');
+      baseDate = now.add(offset, 'week');
+      start = baseDate.startOf('week');
+      end = baseDate.endOf('week');
       break;
     case 'month':
-      start = now.startOf('month');
-      end = now.endOf('month');
+      baseDate = now.add(offset, 'month');
+      start = baseDate.startOf('month');
+      end = baseDate.endOf('month');
       break;
     case 'year':
-      start = now.startOf('year');
-      end = now.endOf('year');
+      baseDate = now.add(offset, 'year');
+      start = baseDate.startOf('year');
+      end = baseDate.endOf('year');
       break;
     default:
-      start = now.startOf('week');
-      end = now.endOf('week');
+      baseDate = now.add(offset, 'week');
+      start = baseDate.startOf('week');
+      end = baseDate.endOf('week');
   }
 
   return {
@@ -53,12 +64,16 @@ export function getPeriodDateRange(period: PeriodType): {
 
 /**
  * 获取周期内的记录
+ * @param records 所有记录
+ * @param period 周期类型
+ * @param offset 偏移量（0 = 当前，-1 = 上一个，1 = 下一个）
  */
 export function getPeriodRecords(
   records: Record[],
   period: PeriodType,
+  offset: number = 0,
 ): Record[] {
-  const {start, end} = getPeriodDateRange(period);
+  const {start, end} = getPeriodDateRange(period, offset);
   return records.filter(
     (record) => record.date >= start && record.date <= end,
   );
@@ -155,6 +170,40 @@ export function getHeatLevel(count: number): number {
   if (count <= 4) return 2;
   if (count <= 6) return 3;
   return 4;
+}
+
+/**
+ * 格式化周期显示文本
+ * @param period 周期类型
+ * @param offset 偏移量
+ */
+export function formatPeriodLabel(
+  period: PeriodType,
+  offset: number = 0,
+): string {
+  const now = dayjs();
+  let baseDate: dayjs.Dayjs;
+
+  switch (period) {
+    case 'week':
+      baseDate = now.add(offset, 'week');
+      const weekStart = baseDate.startOf('week');
+      const weekEnd = baseDate.endOf('week');
+      // 如果跨月，显示 "1月1日-1月7日"，否则显示 "1月1日-7日"
+      if (weekStart.month() === weekEnd.month()) {
+        return `${weekStart.format('M月D日')}-${weekEnd.format('D日')}`;
+      } else {
+        return `${weekStart.format('M月D日')}-${weekEnd.format('M月D日')}`;
+      }
+    case 'month':
+      baseDate = now.add(offset, 'month');
+      return baseDate.format('YYYY年M月');
+    case 'year':
+      baseDate = now.add(offset, 'year');
+      return baseDate.format('YYYY年');
+    default:
+      return '';
+  }
 }
 
 /**

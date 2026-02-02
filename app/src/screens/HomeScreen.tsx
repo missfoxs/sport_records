@@ -102,9 +102,9 @@ function HomeScreen() {
       <View style={styles.headerGradient}>
         <View style={styles.header}>
           <Text style={styles.logo}>FITLOG</Text>
-          <TouchableOpacity style={styles.statsBtn}>
+          {/* <TouchableOpacity style={styles.statsBtn}>
             <Text style={styles.statsBtnText}>统计</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Period Tabs */}
@@ -154,7 +154,7 @@ function HomeScreen() {
         </View>
 
         {/* Debug Panel - 开发时使用，记得删除 */}
-        <DebugPanel />
+        {/* <DebugPanel /> */}
       </ScrollView>
 
       {/* Add Exercise Form Modal */}

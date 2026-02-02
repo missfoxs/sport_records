@@ -1,27 +1,49 @@
-import React, {useMemo} from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
 } from 'react-native';
-import {useSportStore, getPeriodRecords, getExerciseDays, getConsecutiveDays, getRecentDaysStats, getRecordsByType, getPeriodDateRange} from '../store';
-import {LineChart, PieChart} from 'react-native-chart-kit';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {
+  useSportStore,
+  getPeriodRecords,
+  getExerciseDays,
+  getConsecutiveDays,
+  getRecentDaysStats,
+  getRecordsByType,
+  getPeriodDateRange,
+  formatPeriodLabel,
+} from '../store';
+import { LineChart, PieChart } from 'react-native-chart-kit';
 import CalendarHeatmap from '../components/CalendarHeatmap';
 import dayjs from '../utils/dayjs';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 function StatisticsScreen() {
-  const {records, period, setPeriod} = useSportStore();
+  const {
+    records,
+    period,
+    periodOffset,
+    setPeriod,
+    navigatePeriod,
+    resetPeriodOffset,
+  } = useSportStore();
 
   // 获取当前周期的记录
   const periodRecords = useMemo(
-    () => getPeriodRecords(records, period),
-    [records, period],
+    () => getPeriodRecords(records, period, periodOffset),
+    [records, period, periodOffset],
+  );
+
+  // 获取当前周期的显示标签
+  const periodLabel = useMemo(
+    () => formatPeriodLabel(period, periodOffset),
+    [period, periodOffset],
   );
 
   // 计算统计数据
@@ -52,12 +74,12 @@ function StatisticsScreen() {
 
   // 根据周期计算趋势数据
   const trendData = useMemo(() => {
-    const {start, end} = getPeriodDateRange(period);
+    const { start, end } = getPeriodDateRange(period, periodOffset);
     const startDate = dayjs(start);
     const endDate = dayjs(end);
-    
-    let trendStats: Array<{date: string; count: number}> = [];
-    
+
+    let trendStats: Array<{ date: string; count: number }> = [];
+
     if (period === 'week') {
       // 本周：显示7天
       trendStats = getRecentDaysStats(periodRecords, 7);
@@ -68,8 +90,8 @@ function StatisticsScreen() {
       while (true) {
         const dateStr = current.format('YYYY-MM-DD');
         const count = periodRecords.filter(r => r.date === dateStr).length;
-        trendStats.push({date: dateStr, count});
-        
+        trendStats.push({ date: dateStr, count });
+
         if (dateStr === endDateStr) break;
         current = current.add(1, 'day');
       }
@@ -78,27 +100,27 @@ function StatisticsScreen() {
       let current = startDate;
       const monthlyStats: Record<string, number> = {};
       const endMonthStr = endDate.format('YYYY-MM');
-      
+
       while (true) {
         const monthStr = current.format('YYYY-MM');
         monthlyStats[monthStr] = 0;
-        
+
         if (monthStr === endMonthStr) break;
         current = current.add(1, 'month');
       }
-      
+
       periodRecords.forEach(record => {
         const monthStr = record.date.slice(0, 7);
         if (monthlyStats.hasOwnProperty(monthStr)) {
           monthlyStats[monthStr] = (monthlyStats[monthStr] || 0) + 1;
         }
       });
-      
+
       trendStats = Object.entries(monthlyStats)
         .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([date, count]) => ({date, count}));
+        .map(([date, count]) => ({ date, count }));
     }
-    
+
     return {
       labels: trendStats.map(stat => {
         if (period === 'year') {
@@ -112,7 +134,7 @@ function StatisticsScreen() {
         },
       ],
     };
-  }, [periodRecords, period]);
+  }, [periodRecords, period, periodOffset]);
 
   // 计算运动类型分布
   const typeDistribution = useMemo(() => {
@@ -122,7 +144,7 @@ function StatisticsScreen() {
       cardio: '有氧运动',
       stretching: '拉伸放松',
     };
-    
+
     return Object.entries(typeStats).map(([type, count]) => ({
       name: typeLabels[type] || type,
       population: count,
@@ -157,29 +179,34 @@ function StatisticsScreen() {
 
   // 周期切换
   const periods = [
-    {key: 'week', label: '本周'},
-    {key: 'month', label: '本月'},
-    {key: 'year', label: '今年'},
+    { key: 'week', label: '本周' },
+    { key: 'month', label: '本月' },
+    { key: 'year', label: '今年' },
   ] as const;
 
   const handlePeriodChange = (newPeriod: 'week' | 'month' | 'year') => {
-    setPeriod(newPeriod);
+    setPeriod(newPeriod); // setPeriod 会自动重置 periodOffset
+  };
+
+  const handleNavigatePeriod = (direction: 'prev' | 'next') => {
+    navigatePeriod(direction);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        {/* <TouchableOpacity style={styles.backButton}>
           <Text style={styles.backButtonText}>← 返回</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text style={styles.pageTitle}>统计</Text>
       </View>
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         {/* Period Selection - 移到最上面 */}
         <View style={styles.periodSection}>
           <Text style={styles.periodTitle}>选择周期</Text>
@@ -187,14 +214,49 @@ function StatisticsScreen() {
             {periods.map(p => (
               <TouchableOpacity
                 key={p.key}
-                style={[styles.periodTab, period === p.key && styles.periodTabActive]}
-                onPress={() => handlePeriodChange(p.key as any)}>
+                style={[
+                  styles.periodTab,
+                  period === p.key && styles.periodTabActive,
+                ]}
+                onPress={() => handlePeriodChange(p.key as any)}
+              >
                 <Text
-                  style={[styles.periodTabText, period === p.key && styles.periodTabTextActive]}>
+                  style={[
+                    styles.periodTabText,
+                    period === p.key && styles.periodTabTextActive,
+                  ]}
+                >
                   {p.label}
                 </Text>
               </TouchableOpacity>
             ))}
+          </View>
+
+          {/* Period Navigation */}
+          <View style={styles.periodNavigation}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => handleNavigatePeriod('prev')}
+              activeOpacity={0.7}>
+              <Text style={styles.navButtonText}>← 上一个</Text>
+            </TouchableOpacity>
+            <View style={styles.periodLabelContainer}>
+              <Text style={styles.periodLabel}>{periodLabel}</Text>
+              {periodOffset !== 0 && (
+                <TouchableOpacity
+                  style={styles.resetButton}
+                  onPress={resetPeriodOffset}
+                  activeOpacity={0.7}>
+                  <Text style={styles.resetButtonText}>回到当前</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => handleNavigatePeriod('next')}
+              activeOpacity={0.7}>
+              <Text style={styles.navButtonText}>下一个 →</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -222,31 +284,34 @@ function StatisticsScreen() {
         </View>
 
         {/* Trend Chart */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {period === 'week' ? '本周运动趋势' : period === 'month' ? '本月运动趋势' : '今年运动趋势'}
-          </Text>
-          <View style={styles.chartContainer}>
-            {trendData.datasets[0].data.length > 0 ? (
-              <LineChart
-                data={trendData}
-                width={width - 40}
-                height={220}
-                yAxisInterval={1}
-                chartConfig={chartConfig}
-                bezier
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16,
-                }}
-              />
-            ) : (
-              <View style={styles.emptyChart}>
-                <Text style={styles.emptyChartText}>暂无数据</Text>
-              </View>
-            )}
+        {['week', 'year'].includes(period) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {period === 'week'
+                ? '本周运动趋势'
+                : period === 'month'
+                ? '本月运动趋势'
+                : '今年运动趋势'}
+            </Text>
+            <View style={styles.chartContainer}>
+              {trendData.datasets[0].data.length > 0 ? (
+                <LineChart
+                  data={trendData}
+                  width={width - 40}
+                  height={220}
+                  yAxisInterval={1}
+                  chartConfig={chartConfig}
+                  bezier
+                  style={styles.chartStyle}
+                />
+              ) : (
+                <View style={styles.emptyChart}>
+                  <Text style={styles.emptyChartText}>暂无数据</Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Type Distribution */}
         <View style={styles.section}>
@@ -261,10 +326,7 @@ function StatisticsScreen() {
                 accessor="population"
                 backgroundColor="transparent"
                 paddingLeft="15"
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16,
-                }}
+                style={styles.chartStyle}
               />
             ) : (
               <View style={styles.emptyChart}>
@@ -368,6 +430,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
+  chartStyle: {
+    marginVertical: 8,
+    borderRadius: 16,
+  },
   periodSection: {
     backgroundColor: '#ffffff',
     padding: 20,
@@ -405,6 +471,50 @@ const styles = StyleSheet.create({
   },
   periodTabTextActive: {
     color: '#ffffff',
+  },
+  periodNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+  },
+  navButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  navButtonText: {
+    fontSize: 14,
+    color: '#667eea',
+    fontWeight: '600',
+  },
+  periodLabelContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 12,
+  },
+  periodLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  resetButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    backgroundColor: '#667eea',
+  },
+  resetButtonText: {
+    fontSize: 12,
+    color: '#ffffff',
+    fontWeight: '600',
   },
   emptyChart: {
     height: 220,

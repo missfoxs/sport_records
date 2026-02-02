@@ -12,6 +12,7 @@ interface SportStore {
   tasks: Task[];
   records: Record[];
   period: PeriodType; // 当前选择的周期（本周/本月/今年）
+  periodOffset: number; // 周期偏移量（0 = 当前，-1 = 上一个，1 = 下一个）
   defaultTasksInitialized: { [key: string]: boolean }; // 记录哪些日期已经初始化了默认任务
 
   // Actions - 任务管理
@@ -26,6 +27,9 @@ interface SportStore {
 
   // Actions - 周期切换
   setPeriod: (period: PeriodType) => void;
+  setPeriodOffset: (offset: number) => void;
+  navigatePeriod: (direction: 'prev' | 'next') => void;
+  resetPeriodOffset: () => void; // 切换周期类型时重置偏移量
 
   // Actions - 默认任务
   initializeDefaultTasks: () => void; // 初始化今天的默认任务
@@ -74,6 +78,7 @@ export const useSportStore = create<SportStore>()(
       tasks: [],
       records: [],
       period: 'week',
+      periodOffset: 0,
       defaultTasksInitialized: {},
 
       // 添加任务
@@ -181,7 +186,27 @@ export const useSportStore = create<SportStore>()(
 
       // 设置周期
       setPeriod: (period) => {
-        set({period});
+        set({period, periodOffset: 0}); // 切换周期类型时重置偏移量
+      },
+
+      // 设置周期偏移量
+      setPeriodOffset: (offset) => {
+        set({periodOffset: offset});
+      },
+
+      // 导航到上一个/下一个周期
+      navigatePeriod: (direction) => {
+        set((state) => {
+          const newOffset = direction === 'prev' 
+            ? state.periodOffset - 1 
+            : state.periodOffset + 1;
+          return {periodOffset: newOffset};
+        });
+      },
+
+      // 重置周期偏移量
+      resetPeriodOffset: () => {
+        set({periodOffset: 0});
       },
 
       // 清空所有数据
@@ -190,6 +215,7 @@ export const useSportStore = create<SportStore>()(
           tasks: [],
           records: [],
           period: 'week',
+          periodOffset: 0,
           defaultTasksInitialized: {},
         });
       },
@@ -293,6 +319,7 @@ export const useSportStore = create<SportStore>()(
         tasks: state.tasks,
         records: state.records,
         period: state.period,
+        periodOffset: state.periodOffset,
         defaultTasksInitialized: state.defaultTasksInitialized,
       }),
     },
