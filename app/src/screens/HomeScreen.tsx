@@ -6,15 +6,13 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  SafeAreaView,
+  Modal,
 } from 'react-native';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {useSportStore, getTodayTasks, getExerciseDays, getConsecutiveDays} from '../store';
 import TaskList from '../components/TaskList';
 import StatCard from '../components/StatCard';
-import AddExerciseFormModal from '../components/AddExerciseFormModal';
-import DebugPanel from '../components/DebugPanel';
-import {useMockData} from '../data/useMockData';
+import AddExerciseScreen from './AddExerciseScreen';
 import type {PeriodType} from '../types';
 
 function HomeScreen() {
@@ -29,8 +27,6 @@ function HomeScreen() {
     setPeriod: storeSetPeriod,
     initializeDefaultTasks,
   } = useSportStore();
-
-  const {loadMockData} = useMockData();
 
   // 初始化默认任务（只在组件首次加载时执行一次）
   useEffect(() => {
@@ -127,7 +123,7 @@ function HomeScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        {/* Stats Section */}
+        {/* Stats Section - 与 headerGradient 无缝连接 */}
         <View style={styles.statsSection}>
           <View style={styles.statsGrid}>
             <StatCard value={stats.exerciseDays} label="锻炼天数" />
@@ -157,12 +153,17 @@ function HomeScreen() {
         {/* <DebugPanel /> */}
       </ScrollView>
 
-      {/* Add Exercise Form Modal */}
-      <AddExerciseFormModal
+      {/* Add Exercise Screen - Full Screen Modal */}
+      <Modal
         visible={modalVisible}
-        onClose={handleCloseModal}
-        onSubmit={handleAddExercise}
-      />
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={handleCloseModal}>
+        <AddExerciseScreen
+          onSubmit={handleAddExercise}
+          onClose={handleCloseModal}
+        />
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -176,14 +177,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#667eea',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    paddingBottom: 20,
+    paddingBottom: 0, // 移除底部 padding，让圆角更自然
+    paddingTop: 8, // 增加顶部间距
+    marginBottom: 0, // 确保没有间距
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 20,
+    paddingTop: 12, // 减少内部 paddingTop，因为外层已有 paddingTop
     backgroundColor: 'transparent',
   },
   logo: {
@@ -236,11 +239,12 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     backgroundColor: '#ffffff',
-    marginTop: -10,
+    marginTop: 0, // 与 headerGradient 无缝连接
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     paddingTop: 30,
+    // 确保与 headerGradient 的圆角完美对齐
   },
   statsGrid: {
     flexDirection: 'row',

@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   checkboxChecked: {
     borderColor: '#667eea',
-    backgroundColor: 'transparent',
+    backgroundColor: '#667eea',
   },
   checkmark: {
     color: '#ffffff',
