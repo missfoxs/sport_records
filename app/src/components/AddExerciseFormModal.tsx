@@ -11,7 +11,6 @@ import {
   Platform,
   TouchableWithoutFeedback,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import type {ExerciseType} from '../types';
 import {getTodayDate} from '../store/selectors';
 
@@ -90,104 +89,107 @@ function AddExerciseFormModal({
       onRequestClose={handleClose}>
       <TouchableWithoutFeedback onPress={handleBackdropPress}>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardAvoidView}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>添加运动</Text>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={handleClose}>
-                  <Text style={styles.closeButtonText}>×</Text>
-                </TouchableOpacity>
-              </View>
+          <TouchableWithoutFeedback>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.keyboardAvoidView}
+              keyboardVerticalOffset={0}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>添加运动</Text>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={handleClose}>
+                    <Text style={styles.closeButtonText}>×</Text>
+                  </TouchableOpacity>
+                </View>
 
-              {/* <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.contentContainer}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}> */}
-                {/* Exercise Type Selection */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>选择运动类型</Text>
-                  <View style={styles.exerciseTypesGrid}>
-                    {exerciseTypes.map((item) => (
-                      <TouchableOpacity
-                        key={item.type}
-                        style={[
-                          styles.exerciseTypeBtn,
-                          type === item.type && styles.exerciseTypeBtnSelected,
-                        ]}
-                        onPress={() => setType(item.type)}>
-                        <Text style={styles.exerciseTypeIcon}>
-                          {item.emoji}
-                        </Text>
-                        <Text
+                {/* <ScrollView
+                  style={styles.scrollView}
+                  contentContainerStyle={styles.contentContainer}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}> */}
+                  {/* Exercise Type Selection */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>选择运动类型</Text>
+                    <View style={styles.exerciseTypesGrid}>
+                      {exerciseTypes.map((item) => (
+                        <TouchableOpacity
+                          key={item.type}
                           style={[
-                            styles.exerciseTypeLabel,
-                            type === item.type && styles.exerciseTypeLabelSelected,
-                          ]}>
-                          {item.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                            styles.exerciseTypeBtn,
+                            type === item.type && styles.exerciseTypeBtnSelected,
+                          ]}
+                          onPress={() => setType(item.type)}>
+                          <Text style={styles.exerciseTypeIcon}>
+                            {item.emoji}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.exerciseTypeLabel,
+                              type === item.type && styles.exerciseTypeLabelSelected,
+                            ]}>
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                   </View>
-                </View>
 
-                {/* Exercise Name */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>运动名称</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder="例如：深蹲、慢跑、俯卧撑..."
-                    placeholderTextColor="#999"
-                    value={name}
-                    onChangeText={setName}
-                  />
-                </View>
+                  {/* Exercise Name */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>运动名称</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      placeholder="例如：深蹲、慢跑、俯卧撑..."
+                      placeholderTextColor="#999"
+                      value={name}
+                      onChangeText={setName}
+                    />
+                  </View>
 
-                {/* Tag */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>部位标签</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder="例如：腿部、胸部、有氧..."
-                    placeholderTextColor="#999"
-                    value={tag}
-                    onChangeText={setTag}
-                  />
-                </View>
+                  {/* Tag */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>部位标签</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      placeholder="例如：腿部、胸部、有氧..."
+                      placeholderTextColor="#999"
+                      value={tag}
+                      onChangeText={setTag}
+                    />
+                  </View>
 
-                {/* Plan */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>训练计划</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    placeholder="例如：3组 × 15次"
-                    placeholderTextColor="#999"
-                    value={plan}
-                    onChangeText={setPlan}
-                  />
-                </View>
+                  {/* Plan */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>训练计划</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      placeholder="例如：3组 × 15次"
+                      placeholderTextColor="#999"
+                      value={plan}
+                      onChangeText={setPlan}
+                    />
+                  </View>
 
-                {/* 提交按钮 */}
-                <TouchableOpacity
-                  style={[
-                    styles.submitButton,
-                    !name.trim() && styles.submitButtonDisabled,
-                  ]}
-                  onPress={handleSubmit}
-                  disabled={!name.trim()}
-                  activeOpacity={0.8}>
-                  <Text style={styles.submitButtonText}>确认添加</Text>
-                </TouchableOpacity>
+                  {/* 提交按钮 */}
+                  <TouchableOpacity
+                    style={[
+                      styles.submitButton,
+                      !name.trim() && styles.submitButtonDisabled,
+                    ]}
+                    onPress={handleSubmit}
+                    disabled={!name.trim()}
+                    activeOpacity={0.8}>
+                    <Text style={styles.submitButtonText}>确认添加</Text>
+                  </TouchableOpacity>
 
-                {/* 底部留白，避免内容被键盘遮挡 */}
-                <View style={{height: 20}} />
-              {/* </ScrollView> */}
-            </View>
-          </KeyboardAvoidingView>
+                  {/* 底部留白，避免内容被键盘遮挡 */}
+                  <View style={styles.bottomSpacer} />
+                {/* </ScrollView> */}
+              </View>
+            </KeyboardAvoidingView>
+          </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
@@ -201,13 +203,14 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   keyboardAvoidView: {
-    flex: 1,
+    width: '100%',
   },
   modalContent: {
     backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '85%',
+    width: '100%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -242,6 +245,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 20,
   },
   formGroup: {
@@ -293,7 +297,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   submitButton: {
-    marginHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#667eea',
     borderRadius: 12,
@@ -316,6 +319,9 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  bottomSpacer: {
+    height: 40,
   },
 });
 

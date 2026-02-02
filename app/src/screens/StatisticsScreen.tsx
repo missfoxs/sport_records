@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
-import {useSportStore, getPeriodRecords, getExerciseDays, getConsecutiveDays, getRecentDaysStats, getRecordsByType} from '../store';
+import {useSportStore, getPeriodRecords, getExerciseDays, getConsecutiveDays, getRecentDaysStats, getRecordsByType, getPeriodDateRange} from '../store';
 import {LineChart, PieChart} from 'react-native-chart-kit';
 import CalendarHeatmap from '../components/CalendarHeatmap';
 import dayjs from '../utils/dayjs';
@@ -50,18 +50,69 @@ function StatisticsScreen() {
     };
   }, [periodRecords]);
 
-  // 计算趋势数据（最近7天）
+  // 根据周期计算趋势数据
   const trendData = useMemo(() => {
-    const stats = getRecentDaysStats(periodRecords, 7);
+    const {start, end} = getPeriodDateRange(period);
+    const startDate = dayjs(start);
+    const endDate = dayjs(end);
+    
+    let trendStats: Array<{date: string; count: number}> = [];
+    
+    if (period === 'week') {
+      // 本周：显示7天
+      trendStats = getRecentDaysStats(periodRecords, 7);
+    } else if (period === 'month') {
+      // 本月：显示每天
+      let current = startDate;
+      const endDateStr = endDate.format('YYYY-MM-DD');
+      while (true) {
+        const dateStr = current.format('YYYY-MM-DD');
+        const count = periodRecords.filter(r => r.date === dateStr).length;
+        trendStats.push({date: dateStr, count});
+        
+        if (dateStr === endDateStr) break;
+        current = current.add(1, 'day');
+      }
+    } else if (period === 'year') {
+      // 今年：显示每月
+      let current = startDate;
+      const monthlyStats: Record<string, number> = {};
+      const endMonthStr = endDate.format('YYYY-MM');
+      
+      while (true) {
+        const monthStr = current.format('YYYY-MM');
+        monthlyStats[monthStr] = 0;
+        
+        if (monthStr === endMonthStr) break;
+        current = current.add(1, 'month');
+      }
+      
+      periodRecords.forEach(record => {
+        const monthStr = record.date.slice(0, 7);
+        if (monthlyStats.hasOwnProperty(monthStr)) {
+          monthlyStats[monthStr] = (monthlyStats[monthStr] || 0) + 1;
+        }
+      });
+      
+      trendStats = Object.entries(monthlyStats)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([date, count]) => ({date, count}));
+    }
+    
     return {
-      labels: stats.map(stat => dayjs(stat.date).format('MM/DD')),
+      labels: trendStats.map(stat => {
+        if (period === 'year') {
+          return dayjs(stat.date).format('MM月');
+        }
+        return dayjs(stat.date).format('MM/DD');
+      }),
       datasets: [
         {
-          data: stats.map(stat => stat.count),
+          data: trendStats.map(stat => stat.count),
         },
       ],
     };
-  }, [periodRecords]);
+  }, [periodRecords, period]);
 
   // 计算运动类型分布
   const typeDistribution = useMemo(() => {
@@ -129,6 +180,24 @@ function StatisticsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
+        {/* Period Selection - 移到最上面 */}
+        <View style={styles.periodSection}>
+          <Text style={styles.periodTitle}>选择周期</Text>
+          <View style={styles.periodTabs}>
+            {periods.map(p => (
+              <TouchableOpacity
+                key={p.key}
+                style={[styles.periodTab, period === p.key && styles.periodTabActive]}
+                onPress={() => handlePeriodChange(p.key as any)}>
+                <Text
+                  style={[styles.periodTabText, period === p.key && styles.periodTabTextActive]}>
+                  {p.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Quick Stats */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>快速统计</Text>
@@ -155,7 +224,7 @@ function StatisticsScreen() {
         {/* Trend Chart */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            最近7天运动趋势
+            {period === 'week' ? '本周运动趋势' : period === 'month' ? '本月运动趋势' : '今年运动趋势'}
           </Text>
           <View style={styles.chartContainer}>
             {trendData.datasets[0].data.length > 0 ? (
@@ -205,28 +274,12 @@ function StatisticsScreen() {
           </View>
         </View>
 
-        {/* Calendar Heatmap */}
-        <View style={styles.section}>
-          <CalendarHeatmap records={records} />
-        </View>
-
-        {/* Period Selection */}
-        <View style={styles.periodSection}>
-          <Text style={styles.periodTitle}>选择周期</Text>
-          <View style={styles.periodTabs}>
-            {periods.map(p => (
-              <TouchableOpacity
-                key={p.key}
-                style={[styles.periodTab, period === p.key && styles.periodTabActive]}
-                onPress={() => handlePeriodChange(p.key as any)}>
-                <Text
-                  style={[styles.periodTabText, period === p.key && styles.periodTabTextActive]}>
-                  {p.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        {/* Calendar Heatmap - 只在月周期显示 */}
+        {period === 'month' && (
+          <View style={styles.section}>
+            <CalendarHeatmap records={periodRecords} />
           </View>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -318,7 +371,9 @@ const styles = StyleSheet.create({
   periodSection: {
     backgroundColor: '#ffffff',
     padding: 20,
+    marginTop: 20,
     marginBottom: 20,
+    borderRadius: 16,
   },
   periodTitle: {
     fontSize: 16,
